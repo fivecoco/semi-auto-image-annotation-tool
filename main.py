@@ -12,7 +12,8 @@ Copyright {2018} {Viraj Mavani}
 import os
 
 from tkinter import *
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog,messagebox
+
 from PIL import Image, ImageTk, ImageDraw
 import random
 
@@ -30,6 +31,10 @@ import numpy as np
 import tensorflow as tf
 import config
 import math
+
+
+import SLUtil
+import SLVideoUtil
 
 
 def get_session():
@@ -91,10 +96,13 @@ class MainGUI:
         self.annotation_file.close()
 
         # ------------------ GUI ---------------------
-
         # Control Panel
         self.ctrlPanel = Frame(self.frame)
         self.ctrlPanel.grid(row=0, column=0, sticky=W + N)
+
+        self.openVedioBtn = Button(self.ctrlPanel, text='Open Vedio', command=self.open_video)
+        self.openVedioBtn.pack(fill=X, side=TOP)
+
         self.openBtn = Button(self.ctrlPanel, text='Open', command=self.open_image)
         self.openBtn.pack(fill=X, side=TOP)
         self.openDirBtn = Button(self.ctrlPanel, text='Open Dir', command=self.open_image_dir)
@@ -158,6 +166,24 @@ class MainGUI:
             self.cocoIntVars.append(IntVar())
             self.mb.menu.add_checkbutton(label=label_coco, variable=self.cocoIntVars[idxcoco])
         # print(self.cocoIntVars)
+
+    def open_video(self):
+        self.filename = filedialog.askopenfilename(title="Select video", filetypes=(("mp4 files", "*.mp4"),
+                                                                                    ("all files", "*.*")))
+
+        destPath,c = SLVideoUtil.convert_mp4_jpg(self.filename,os.path.join(SLUtil.get_current_path(),"destImage"))
+        if c >0:
+            msg = 'Success convert {} to {} jpg, in folder {},'.format(self.filename, c, destPath )
+            messagebox.showinfo(message=(msg))
+            #os.system("start "+destPath)
+
+            #open the directory directly
+            self.imageDir = destPath
+            self.imageList = os.listdir(destPath)
+            self.imageList = sorted(self.imageList)
+            self.filename = None
+            # print(self.imageList)
+            self.load_image(self.imageDir + '/' + self.imageList[self.cur])
 
     def open_image(self):
         self.filename = filedialog.askopenfilename(title="Select Image", filetypes=(("jpeg files", "*.jpg"),
